@@ -1,0 +1,59 @@
+name: "Web to App Action"
+description: "Build folder path of html and creates an APK for it."
+inputs:
+  build-folder-path: 
+    description: "Path to build folder"
+    required: false
+    default: "build"
+
+  app-name: 
+    description: "Name of App"
+    required: false
+    default: "MyApp"
+
+  output-folder-path:
+    description: "Path to output folder"
+    required: false
+    default: "apk"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '16.x'
+  
+    - run: mkdir -p ionic_build_folder/build/
+      shell: bash
+    
+    - name: Copy build files to ionic build folder
+      run: cp -r ${{ inputs.build-folder-path }}/* ionic_build_folder/build
+      shell: bash
+    
+    - name: Setup ionic and capacitor
+      run: |
+        npm install -g @ionic/cli
+        npm init -y
+        npm install @capacitor/core
+        npm install @capacitor/cli --save-dev
+        echo '{"appId": "io.ionic.${{ inputs.app-name }}","appName": "${{ inputs.app-name }}","bundledWebRuntime": false,"npmClient": "npm","webDir": "build","cordova": {}}' > capacitor.config.json
+        echo '{"name": "${{ inputs.app-name }}","integrations": {"capacitor": {}},"type": "react"}' > ionic.config.json
+        cat ionic.config.json
+        cat capacitor.config.json
+        ionic capacitor add android
+        cd android
+        ./gradlew assembleDebug
+        ./gradlew assembleRelease
+      shell: bash
+      working-directory: ionic_build_folder
+    
+    - name: Copy APK to output folder
+      run: |
+        mkdir -p ${{ inputs.output-folder-path }}
+        cp -r ionic_build_folder/android/app/build/outputs/apk/ ${{ inputs.output-folder-path }}/
+      shell: bash
