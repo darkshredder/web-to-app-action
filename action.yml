@@ -1,5 +1,8 @@
 name: "Web to App Action"
 description: "Build folder path of html and creates an APK for it."
+branding:
+  color: 'blue'
+  icon: 'smartphone'
 inputs:
   build-folder-path: 
     description: "Path to build folder"
