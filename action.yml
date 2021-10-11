@@ -1,4 +1,4 @@
-name: "Web to App Action"
+name: "Website to APK Action"
 description: "Build folder path of html and creates an APK for it."
 branding:
   color: 'blue'
